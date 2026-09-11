@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a2540">
+    <title>MEDSCAN+ | Smart Medicine Safety & Recovery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================
+           DESIGN SYSTEM & CORE VARIABLES
+           ========================================== */
+        :root {
+            --primary: #0a2540; /* Deep navy */
+            --primary-light: #1e3a5f;
+            --accent: #007e6a; /* Medical teal/green */
+            --accent-light: #e6f4f1;
+            --warning: #d97706; /* Amber */
+            --warning-light: #fff7ed;
+            --danger: #dc2626; /* Soft red */
+            --danger-light: #fef2f2;
+            --bg: #f4f7fc; /* Light blue-gray */
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --nav-height: 64px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #eef2f6;
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1.5;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+
+        /* ==========================================
+           APP SHELL & LAYOUT
+           ========================================== */
+        #app-container {
+            max-width: 440px;
+            margin: 0 auto;
+            background-color: var(--bg);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        @media (min-width: 441px) {
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: #cbd5e1;
+                padding: 20px 0;
+            }
+            #app-container {
+                height: 900px;
+                max-height: 90vh;
+                border-radius: 32px;
+                overflow: hidden;
+                border: 8px solid #0f172a;
+            }
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            min-height: 100%;
+            padding-bottom: calc(var(--nav-height) + 16px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================
+           SPLASH SCREEN
+           ========================================== */
+        #splash {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--primary);
+            color: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 32px;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #splash.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 72px;
+            height: 72px;
+            background: var(--accent);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 126, 106, 0.4);
+        }
+
+        .splash-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .splash-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+        }
+
+        .splash-tagline {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.6;
+            margin-bottom: 48px;
+            color: white;
+        }
+
+        .splash-loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .splash-label {
+            position: absolute;
+            bottom: 32px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ==========================================
+           TYPOGRAPHY & UI ELEMENTS
+           ========================================== */
+        h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+        h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+        h3 { font-size: 16px; font-weight: 600; }
+        p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+        .header {
+            padding: 20px 20px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .greeting { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .header-left .name { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .header-right {
+            width: 40px; height: 40px;
+            background: var(--bg);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { transform: scale(0.98); background: var(--primary-light); }
+        
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-accent:active { transform: scale(0.98); background: #006656; }
+
+        .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--border); }
+        .btn-outline:active { background: var(--bg); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-accent { background: var(--accent-light); color: var(--accent); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-danger { background: var(--danger-light); color: var(--danger); }
+        .badge-neutral { background: #f1f5f9; color: var(--text-muted); }
+
+        /* ==========================================
+           BOTTOM NAVIGATION
+           ========================================== */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-item.active svg {
+            color: var(--accent);
+        }
+
+        /* ==========================================
+           COMPONENTS
+           ========================================== */
+        .hero-card {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+        }
+
+        .hero-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; opacity: 0.9; }
+        .journey-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .journey-step {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .journey-step-num { font-size: 11px; opacity: 0.7; font-weight: 600; }
+        .journey-step-name { font-size: 14px; font-weight: 700; }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .qa-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .qa-btn:active { transform: scale(0.98); border-color: var(--primary); }
+        .qa-icon { width: 36px; height: 36px; background: var(--accent-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+        .qa-label { font-size: 13px; font-weight: 600; color: var(--primary); }
+
+        .med-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .med-item:last-child { border-bottom: none; }
+        .med-info h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .med-info p { font-size: 12px; margin: 0; }
+        .med-action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 15px;
+            margin-left: 12px;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .facility-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .facility-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .facility-name { font-size: 15px; font-weight: 700; color: var(--primary); }
+        .facility-type { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .facility-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text); margin-bottom: 12px; }
+        .facility-meta div { display: flex; align-items: center; gap: 4px; }
+        .facility-actions { display: flex; gap: 8px; }
+        .facility-actions button { flex: 1; padding: 8px; font-size: 13px; }
+
+        /* Scanner Animation */
+        .scanner-container {
+            width: 100%;
+            height: 200px;
+            background: #0f172a;
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .scanner-box {
+            width: 80%;
+            height: 80%;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+        }
+        .scanner-line {
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            position: absolute;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 10px var(--accent);
+            animation: scanMove 2s ease-in-out infinite;
+        }
+        @keyframes scanMove {
+            0%, 100% { top: 0; }
+            50% { top: 100%; }
+        }
+        .scanner-text {
+            position: absolute;
+            bottom: 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Verification Table */
+        .compare-table {
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .compare-row {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        .compare-row:last-child { border-bottom: none; }
+        .compare-cell {
+            flex: 1;
+            padding: 12px;
+            font-size: 13px;
+        }
+        .compare-cell.label { background: #f8fafc; font-weight: 600; color: var(--text-muted); width: 30%; flex: none; }
+        .compare-cell.value { font-weight: 600; color: var(--text); }
+
+        .result-box {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .result-success { background: var(--accent-light); border: 1px solid var(--accent); }
+        .result-warning { background: var(--warning-light); border: 1px solid var(--warning); }
+        .result-icon { width: 40px; height: 40px; margin: 0 auto 8px; }
+        
+        /* Adherence Dots */
+        .adherence-row { display: flex; justify-content: space-between; margin-top: 12px; }
+        .adherence-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .dot-taken { background: var(--accent); color: white; }
+        .dot-missed { background: var(--danger-light); color: var(--danger); }
+        .dot-upcoming { background: #f1f5f9; color: var(--text-muted); }
+
+        /* Map */
+        .map-container {
+            height: 180px;
+            background: #e2e8f0;
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 16px;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(15, 23, 42, 0.05) 25%, rgba(15, 23, 42, 0.05) 26%, transparent 27%, transparent 74%, rgba(15, 23, 42, 0.05) 75%, rgba(15, 23, 42, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(15, 23, 42, 0.05) 25%, rgba(15, 23, 42, 0.05) 26%, transparent 27%, transparent 74%, rgba(15, 23, 42, 0.05) 75%, rgba(15, 23, 42, 0.05) 76%, transparent 77%, transparent);
+            background-size: 40px 40px;
+        }
+        .map-pin {
+            position: absolute;
+            transform: translate(-50%, -100%);
+        }
+        .map-pin.user { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+        .map-pin.facility { left: 20%; top: 30%; }
+        .map-pin.facility2 { left: 75%; top: 60%; }
+        .map-pin.facility3 { left: 60%; top: 25%; }
+
+        /* QR Code */
+        .qr-code {
+            width: 140px;
+            height: 140px;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 0 auto 12px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 1px;
+        }
+        .qr-pixel { background: var(--primary); }
+        .qr-pixel.empty { background: transparent; }
+
+        /* Gov Dashboard */
+        #gov-screen {
+            background: #f8fafc;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .gov-header {
+            background: var(--primary);
+            color: white;
+            padding: 24px;
+        }
+        .gov-content { padding: 24px; }
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: white; padding: 16px; border-radius: 8px; border-left: 4px solid var(--accent); box-shadow: var(--shadow-sm); }
+        .kpi-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .kpi-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+        
+        .bar-chart { display: flex; flex-direction: column; gap: 12px; }
+        .bar-row { display: flex; align-items: center; gap: 12px; }
+        .bar-label { width: 100px; font-size: 13px; font-weight: 600; }
+        .bar-track { flex: 1; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+        .bar-val { width: 30px; font-size: 13px; font-weight: 600; text-align: right; }
+
+        /* Toast */
+        #toast {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 200;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+
+        /* Utility */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .text-success { color: var(--accent); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .mt-0 { margin-top: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .text-center { text-align: center; }
+        .small { font-size: 12px; }
+        .demo-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            z-index: 10;
+        }
+        .demo-badge-mobile {
+            background: #f1f5f9;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- SPLASH SCREEN -->
+    <div id="splash">
+        <div class="splash-logo">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2 L12 22 M2 12 L22 12" />
+                <circle cx="12" cy="12" r="10" />
+            </svg>
+        </div>
+        <div class="splash-title">MEDSCAN+</div>
+        <div class="splash-sub">Smart Medicine Safety & Recovery</div>
+        <div class="splash-tagline">
+            "Verify what you take.<br>
+            Manage how you take it.<br>
+            Recover what you don’t."
+        </div>
+        <div class="splash-loader"></div>
+        <div class="splash-label">Rajasthan Ideathon 2026</div>
+    </div>
+
+    <!-- APP SCREENS -->
+    <div id="home-screen" class="screen active">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Good morning,</div>
+                <div class="name">Rahul <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Jaipur</div>
+            </div>
+            <div class="header-right" onclick="navigate('profile')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+        </div>
+        <div class="content">
+            <div class="hero-card">
+                <div class="demo-badge" onclick="showToast('Offline prototype — all availability, medicine and dashboard data are simulated.')">● DEMO MODE</div>
+                <div class="hero-title">Your medicine journey</div>
+                <div class="journey-grid">
+                    <div class="journey-step" onclick="navigate('find')">
+                        <div class="journey-step-num">STEP 1</div>
+                        <div class="journey-step-name">Find</div>
+                    </div>
+                    <div class="journey-step" onclick="navigate('verify')">
+                        <div class="journey-step-num">STEP 2</div>
+                        <div class="journey-step-name">Verify</div>
+                    </div>
+                    <div class="journey-step" onclick="navigate('medicines')">
+                        <div class="journey-step-num">STEP 3</div>
+                        <div class="journey-step-name">Manage</div>
+                    </div>
+                    <div class="journey-step" onclick="navigate('recover')">
+                        <div class="journey-step-num">STEP 4</div>
+                        <div class="journey-step-name">Recover</div>
+                    </div>
+                </div>
+                <button class="btn btn-accent" onclick="navigate('find')">Start with Find Medicine</button>
+            </div>
+
+            <h2 style="margin-bottom:12px;">Quick Actions</h2>
+            <div class="quick-actions">
+                <div class="qa-btn" onclick="navigate('find')">
+                    <div class="qa-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+                    <div class="qa-label">Find Medicine</div>
+                </div>
+                <div class="qa-btn" onclick="navigate('scan')">
+                    <div class="qa-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg></div>
+                    <div class="qa-label">Scan Prescription</div>
+                </div>
+                <div class="qa-btn" onclick="navigate('verify')">
+                    <div class="qa-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+                    <div class="qa-label">Verify Medicine</div>
+                </div>
+                <div class="qa-btn" onclick="navigate('recover')">
+                    <div class="qa-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
+                    <div class="qa-label">Recover Medicine</div>
+                </div>
+            </div>
+
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <h2 style="margin:0;">Today's Medicines</h2>
+                <span class="small" style="color:var(--accent); font-weight:600;" onclick="navigate('medicines')">View All</span>
+            </div>
+            <div class="card">
+                <div class="med-item">
+                    <div class="med-info">
+                        <h4>Metformin 500 mg</h4>
+                        <p>08:00 AM • Today</p>
+                    </div>
+                    <button class="med-action-btn" style="background:var(--accent-light); color:var(--accent);" id="med-1-btn">✓ Taken</button>
+                </div>
+                <div class="med-item">
+                    <div class="med-info">
+                        <h4>Amlodipine 5 mg</h4>
+                        <p>08:00 PM • Upcoming</p>
+                    </div>
+                    <button class="med-action-btn" style="background:var(--primary); color:white;" onclick="markTaken('med-2-btn')">Mark Taken</button>
+                </div>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <div class="flex-between" style="margin-bottom: 8px;">
+                    <div>
+                        <span class="badge badge-warning">Expiry Alert</span>
+                        <h3 style="margin-top: 8px;">Vitamin D3 Pack</h3>
+                    </div>
+                </div>
+                <p style="margin-bottom: 12px;">Your Vitamin D3 pack expires in 42 days.</p>
+                <button class="btn btn-outline" onclick="navigate('medicines')">View Medicine</button>
+            </div>
+
+            <div class="card" style="background: var(--primary); color: white; border:none;">
+                <div class="flex-between">
+                    <div>
+                        <h3 style="color:white;">Recovery Card</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-top: 4px;">You may have eligible unused medicines.</p>
+                    </div>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <button class="btn btn-accent" style="margin-top: 12px;" onclick="navigate('recover')">Check & Recover</button>
+            </div>
+
+            <div class="card" style="display:flex; align-items:center; gap:12px; background:var(--accent-light); border-color:var(--accent);">
+                <div style="width:40px; height:40px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--accent);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div>
+                    <h4 style="font-size: 14px; margin:0; color:var(--primary);">Impact Card</h4>
+                    <p style="font-size: 13px; margin:0; color:var(--accent);">1 medicine recovered through your local network</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIND MEDICINE SCREEN -->
+    <div id="find-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Search</div>
+                <div class="name">Find Medicine</div>
+            </div>
+        </div>
+        <div class="content">
+            <p style="margin-bottom: 16px;">Find legitimate medicine sources nearby.</p>
+            <div class="search-bar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="search-input" placeholder="Search medicine name" value="Metformin 500 mg" oninput="searchFacilities()">
+            </div>
+            
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <span class="badge badge-neutral">Demo availability — not live stock</span>
+                <span class="small text-success">Ranked: Free / Price / Distance</span>
+            </div>
+
+            <div id="facility-list">
+                <!-- Populated by JS -->
+            </div>
+
+            <div class="card" style="background:var(--warning-light); border-color:var(--warning); margin-top:16px;">
+                <div style="display:flex; gap:8px; align-items:flex-start;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    <div>
+                        <h4 style="font-size:14px; margin-bottom:4px; color:var(--warning);">Reminder</h4>
+                        <p style="font-size:13px; margin:0; color:var(--text);">Carry your valid prescription when required.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRESCRIPTION SCAN SCREEN -->
+    <div id="scan-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Scan</div>
+                <div class="name">Prescription Scanner</div>
+            </div>
+        </div>
+        <div class="content">
+            <p style="margin-bottom: 16px;">Turn your prescription into a structured medicine plan.</p>
+            
+            <div id="scan-initial">
+                <div class="scanner-container">
+                    <div class="scanner-box">
+                        <div class="scanner-line" style="animation-play-state: paused; opacity: 0.3;"></div>
+                    </div>
+                    <div class="scanner-text">Ready to scan</div>
+                </div>
+                <button class="btn btn-primary" style="margin-bottom: 12px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    Use Camera
+                </button>
+                <button class="btn btn-outline" style="margin-bottom: 12px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Prescription
+                </button>
+                <button class="btn btn-accent" onclick="startDemoScan()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 L12 22 M2 12 L22 12" /><circle cx="12" cy="12" r="10" /></svg>
+                    Try Demo Prescription
+                </button>
+            </div>
+
+            <div id="scan-loading" style="display:none;">
+                <div class="scanner-container">
+                    <div class="scanner-box">
+                        <div class="scanner-line"></div>
+                    </div>
+                    <div class="scanner-text" id="scan-status-text">Reading prescription...</div>
+                </div>
+                <div class="card">
+                    <div class="flex-between">
+                        <span>Analyzing document structure</span>
+                        <div class="splash-loader" style="width:20px; height:20px; border-width:2px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="scan-results" style="display:none;">
+                <div class="card" style="border-left: 4px solid var(--accent);">
+                    <span class="badge badge-accent">Extraction Complete</span>
+                    <h3 style="margin-top: 8px;">Prescription information extracted</h3>
+                    <p style="font-size:13px; margin-top:4px;">Patient: Rahul Sharma</p>
+                </div>
+
+                <h3 style="margin: 16px 0 8px;">Detected Medicines</h3>
+                <div class="card">
+                    <div class="med-item" style="border-bottom: 1px solid var(--border);">
+                        <div class="med-info">
+                            <h4>Metformin 500 mg</h4>
+                            <p>As directed • 30 days</p>
+                        </div>
+                        <span class="badge badge-accent">High confidence</span>
+                    </div>
+                    <div class="med-item">
+                        <div class="med-info">
+                            <h4>Amlodipine 5 mg</h4>
+                            <p>Once daily • 30 days</p>
+                        </div>
+                        <span class="badge badge-accent">High confidence</span>
+                    </div>
+                </div>
+
+                <div class="card" style="background:var(--bg);">
+                    <p style="font-size:12px; text-align:center;">
+                        Could not confidently read all instructions. Please verify with a pharmacist/doctor.
+                    </p>
+                </div>
+
+                <button class="btn btn-primary" onclick="createMedicinePlan()">Add to Medicine Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VERIFY MEDICINE SCREEN -->
+    <div id="verify-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Verification</div>
+                <div class="name">Verify Medicine</div>
+            </div>
+        </div>
+        <div class="content">
+            <p style="margin-bottom: 16px;">Is this the medicine you were prescribed?</p>
+
+            <div class="card">
+                <span class="badge badge-neutral">STEP 1</span>
+                <h3 style="margin: 8px 0 4px;">Prescription selected</h3>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:8px; height:8px; background:var(--accent); border-radius:50%;"></div>
+                    <h4 style="margin:0;">Metformin 500 mg</h4>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="badge badge-neutral">STEP 2</span>
+                <h3 style="margin: 8px 0 12px;">Scan medicine packet</h3>
+                
+                <div id="verify-scan-initial">
+                    <button class="btn btn-outline" style="margin-bottom: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                        Scan Packet
+                    </button>
+                    <div class="flex-between" style="margin-top:12px;">
+                        <button class="btn btn-accent" style="flex:1; margin-right:4px;" onclick="runVerification('match')">Use Demo (Match)</button>
+                        <button class="btn btn-outline" style="flex:1; margin-left:4px; color:var(--danger); border-color:var(--danger);" onclick="runVerification('mismatch')">Try Mismatch</button>
+                    </div>
+                </div>
+
+                <div id="verify-scan-loading" style="display:none;">
+                    <div class="scanner-container" style="height: 120px;">
+                        <div class="scanner-box" style="height: 90%;">
+                            <div class="scanner-line"></div>
+                        </div>
+                        <div class="scanner-text">Scanning packet...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="verify-results" style="display:none;">
+                <h3 style="margin-bottom: 8px;">Comparison</h3>
+                <div class="compare-table">
+                    <div class="compare-row">
+                        <div class="compare-cell label">Source</div>
+                        <div class="compare-cell value">Prescription</div>
+                        <div class="compare-cell value">Scanned</div>
+                    </div>
+                    <div class="compare-row">
+                        <div class="compare-cell label">Medicine</div>
+                        <div class="compare-cell value">Metformin</div>
+                        <div class="compare-cell value" id="scanned-name">Metformin</div>
+                    </div>
+                    <div class="compare-row">
+                        <div class="compare-cell label">Strength</div>
+                        <div class="compare-cell value">500 mg</div>
+                        <div class="compare-cell value" id="scanned-strength">500 mg</div>
+                    </div>
+                </div>
+
+                <div id="match-result" class="result-box result-success" style="display:none;">
+                    <div class="result-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h3 style="color: var(--accent); margin-bottom: 4px;">PRESCRIPTION MATCH</h3>
+                    <p style="color: var(--text); margin-bottom: 16px;">Medicine name and strength match the selected prescription.</p>
+                    <button class="btn btn-accent" onclick="navigate('medicines')">Add to Medicine Plan</button>
+                </div>
+
+                <div id="mismatch-result" class="result-box result-warning" style="display:none;">
+                    <div class="result-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <h3 style="color: var(--warning); margin-bottom: 4px;">POSSIBLE MISMATCH</h3>
+                    <p style="color: var(--text); margin-bottom: 16px;">Strength does not match the selected prescription.</p>
+                    <button class="btn btn-primary" style="background: var(--warning); margin-bottom: 12px;">Verify Before Use</button>
+                    <p style="font-size: 12px; color: var(--text-muted);">Do not rely on the app alone. Confirm with a pharmacist or qualified healthcare professional.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEDICINES SCREEN -->
+    <div id="medicines-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Manage</div>
+                <div class="name">My Medicines</div>
+            </div>
+            <div class="header-right" onclick="showToast('Add Medicine flow not available in demo.')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+        </div>
+        <div class="content">
+            <div class="quick-actions" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px;">
+                <div class="card" style="margin:0; text-align:center; padding: 12px;">
+                    <h3 style="color: var(--primary);">3</h3>
+                    <p style="font-size: 11px; margin:0;">Active Meds</p>
+                </div>
+                <div class="card" style="margin:0; text-align:center; padding: 12px;">
+                    <h3 style="color: var(--accent);">1</h3>
+                    <p style="font-size: 11px; margin:0;">Reminder Today</p>
+                </div>
+                <div class="card" style="margin:0; text-align:center; padding: 12px;">
+                    <h3 style="color: var(--warning);">1</h3>
+                    <p style="font-size: 11px; margin:0;">Expiry Alert</p>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 8px;">Today's Schedule</h3>
+            <div class="card">
+                <div class="med-item">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div style="width:40px; height:40px; background:var(--bg); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--primary);">
+                            <span>08</span>
+                            <span>AM</span>
+                        </div>
+                        <div class="med-info">
+                            <h4>Metformin 500 mg</h4>
+                            <p>Morning • 30-day plan</p>
+                        </div>
+                    </div>
+                    <button class="med-action-btn" style="background:var(--accent-light); color:var(--accent);">✓ Taken</button>
+                </div>
+                <div class="med-item">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div style="width:40px; height:40px; background:var(--bg); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--primary);">
+                            <span>08</span>
+                            <span>PM</span>
+                        </div>
+                        <div class="med-info">
+                            <h4>Amlodipine 5 mg</h4>
+                            <p>Night • 30-day plan</p>
+                        </div>
+                    </div>
+                    <button class="med-action-btn" style="background:var(--primary); color:white;" onclick="markTaken(this)">Take Later</button>
+                </div>
+            </div>
+
+            <h3 style="margin: 16px 0 8px;">7-Day Overview</h3>
+            <div class="card">
+                <div class="flex-between" style="margin-bottom: 8px;">
+                    <span class="small">Adherence</span>
+                    <span class="small text-success" style="font-weight:600;">85% Taken</span>
+                </div>
+                <div class="adherence-row">
+                    <div class="adherence-dot dot-taken">M</div>
+                    <div class="adherence-dot dot-taken">T</div>
+                    <div class="adherence-dot dot-missed">W</div>
+                    <div class="adherence-dot dot-taken">T</div>
+                    <div class="adherence-dot dot-taken">F</div>
+                    <div class="adherence-dot dot-upcoming">S</div>
+                    <div class="adherence-dot dot-upcoming">S</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 16px 0 8px;">Alerts</h3>
+            <div class="card" style="border-left: 4px solid var(--warning); margin-bottom: 8px;">
+                <h4 style="font-size: 14px; color: var(--warning);">Expiry Alert</h4>
+                <p style="font-size: 13px; margin: 4px 0 0;">Vitamin D3 expires in 42 days.</p>
+            </div>
+            <div class="card" style="border-left: 4px solid var(--danger);">
+                <h4 style="font-size: 14px; color: var(--danger);">Refill Alert</h4>
+                <p style="font-size: 13px; margin: 4px 0 0;">Metformin supply may run out in 5 days.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECOVER SCREEN -->
+    <div id="recover-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Recovery</div>
+                <div class="name">Recover Unused Medicine</div>
+            </div>
+        </div>
+        <div class="content">
+            <p style="margin-bottom: 16px;">Close the medicine loop responsibly.</p>
+
+            <div class="hero-card">
+                <div class="hero-title">Have unused medicine left after treatment?</div>
+                <button class="btn btn-accent" onclick="checkEligibility()">Check Eligibility</button>
+            </div>
+
+            <div class="flex-between" style="width: 100%; margin-bottom: 20px;">
+                <div style="text-align: center; flex: 1;">
+                    <div style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; margin: 0 auto 4px; font-size: 12px; display: flex; align-items: center; justify-content: center;">1</div>
+                    <span style="font-size: 10px; font-weight: 600;">Scan</span>
+                </div>
+                <div style="height: 2px; background: var(--border); flex: 1; margin-top: -12px;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; margin: 0 auto 4px; font-size: 12px; display: flex; align-items: center; justify-content: center;">2</div>
+                    <span style="font-size: 10px; font-weight: 600;">Eligibility</span>
+                </div>
+                <div style="height: 2px; background: var(--border); flex: 1; margin-top: -12px;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; margin: 0 auto 4px; font-size: 12px; display: flex; align-items: center; justify-content: center;">3</div>
+                    <span style="font-size: 10px; font-weight: 600;">Return Point</span>
+                </div>
+                <div style="height: 2px; background: var(--border); flex: 1; margin-top: -12px;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; margin: 0 auto 4px; font-size: 12px; display: flex; align-items: center; justify-content: center;">4</div>
+                    <span style="font-size: 10px; font-weight: 600;">Drop-off</span>
+                </div>
+            </div>
+
+            <div id="eligibility-check" class="card">
+                <h3>Demo Medicine: Metformin 500 mg</h3>
+                <p style="margin-bottom: 16px;">Status: UNOPENED / SEALED • EXPIRY: 8 months away</p>
+                
+                <div style="margin-bottom: 16px;">
+                    <div class="flex-between" style="margin-bottom: 8px;">
+                        <span style="font-size: 14px;">Packaging sealed</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="flex-between" style="margin-bottom: 8px;">
+                        <span style="font-size: 14px;">Expiry sufficiently far</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="flex-between" style="margin-bottom: 8px;">
+                        <span style="font-size: 14px;">Batch identifiable</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="flex-between" style="margin-bottom: 8px;">
+                        <span style="font-size: 14px;">Storage condition known</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="flex-between">
+                        <span style="font-size: 14px;">Category eligible</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                </div>
+
+                <div class="result-box result-success" style="margin-bottom: 0;">
+                    <h3 style="color: var(--accent); margin-bottom: 4px;">Potentially eligible for return</h3>
+                    <p style="font-size: 12px; color: var(--text);">Final acceptance is determined by the authorized receiving facility.</p>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="navigate('return-points')">Find Return Point</button>
+        </div>
+    </div>
+
+    <!-- RETURN POINTS SCREEN -->
+    <div id="return-points-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Recovery</div>
+                <div class="name">Return Points</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="map-container">
+                <div class="map-pin user">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary)" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>
+                </div>
+                <div class="map-pin facility" onclick="selectFacility('Gov PHC', '2.1 km')">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--accent)" stroke="white" stroke-width="2"><path d="M12 2 L12 22 M2 12 L22 12" /><circle cx="12" cy="12" r="10" fill="none" stroke="var(--accent)"/></svg>
+                </div>
+                <div class="map-pin facility2" onclick="selectFacility('Gov Hospital', '4.8 km')">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--accent)" stroke="white" stroke-width="2"><path d="M12 2 L12 22 M2 12 L22 12" /><circle cx="12" cy="12" r="10" fill="none" stroke="var(--accent)"/></svg>
+                </div>
+            </div>
+
+            <div class="flex-between" style="margin-bottom: 16px; gap: 8px;">
+                <button class="btn btn-outline" style="font-size: 12px; padding: 8px;">Government</button>
+                <button class="btn btn-outline" style="font-size: 12px; padding: 8px;">Jan Aushadhi</button>
+                <button class="btn btn-outline" style="font-size: 12px; padding: 8px;">Collection Pt</button>
+            </div>
+
+            <div class="facility-card" onclick="selectFacility('Government PHC', '2.1 km')">
+                <div class="facility-header">
+                    <div>
+                        <div class="facility-name">Government PHC</div>
+                        <div class="facility-type">Participating Centre • Jaipur</div>
+                    </div>
+                    <span class="badge badge-accent">Open</span>
+                </div>
+                <div class="facility-meta">
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 2.1 km</div>
+                </div>
+            </div>
+
+            <div class="facility-card" onclick="selectFacility('Government Hospital', '4.8 km')">
+                <div class="facility-header">
+                    <div>
+                        <div class="facility-name">Government Hospital</div>
+                        <div class="facility-type">Authorized Facility • Jaipur</div>
+                    </div>
+                    <span class="badge badge-accent">Open</span>
+                </div>
+                <div class="facility-meta">
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 4.8 km</div>
+                </div>
+            </div>
+
+            <div class="facility-card" style="opacity: 0.7;">
+                <div class="facility-header">
+                    <div>
+                        <div class="facility-name">Jan Aushadhi Kendra</div>
+                        <div class="facility-type">Participation subject to official integration</div>
+                    </div>
+                    <span class="badge badge-neutral">Check</span>
+                </div>
+                <div class="facility-meta">
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> 3.5 km</div>
+                </div>
+            </div>
+
+            <p style="font-size: 12px; text-align: center; margin-top: 16px;">Participating/authorized centres only.</p>
+        </div>
+    </div>
+
+    <!-- DROP-OFF SCREEN -->
+    <div id="dropoff-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Recovery</div>
+                <div class="name">Recovery Drop-off</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="card text-center">
+                <h3 id="dropoff-facility">Government PHC</h3>
+                <p id="dropoff-distance">2.1 km away</p>
+            </div>
+
+            <div class="card">
+                <div class="med-item" style="border-bottom: 1px solid var(--border);">
+                    <div class="med-info">
+                        <h4>Medicine</h4>
+                        <p>Metformin 500 mg</p>
+                    </div>
+                </div>
+                <div class="med-item" style="border: none;">
+                    <div class="med-info">
+                        <h4>Return ID</h4>
+                        <p style="font-family: monospace; color: var(--primary); font-weight: 700;">MSR-2026-00481</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card text-center">
+                <h3>Present this QR at the facility</h3>
+                <div class="qr-code" id="qr-code-grid"></div>
+                <p style="font-size: 12px;">Scan for verification</p>
+            </div>
+
+            <div id="dropoff-pending">
+                <button class="btn btn-accent" onclick="simulateVerification()">Simulate Staff Verification</button>
+            </div>
+
+            <div id="dropoff-success" style="display:none;">
+                <div class="result-box result-success">
+                    <div class="result-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h3 style="color: var(--accent); margin-bottom: 4px;">Drop-off Recorded</h3>
+                    <p style="color: var(--text);">Status: Received for facility verification</p>
+                </div>
+                <div class="card" style="background: var(--bg);">
+                    <p style="font-size: 12px; text-align: center; margin: 0;">Final reuse or disposal decision is made by authorized personnel.</p>
+                </div>
+                <button class="btn btn-primary" onclick="navigate('home')">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE SCREEN -->
+    <div id="profile-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <div class="greeting">Profile</div>
+                <div class="name">Settings</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="card flex-between">
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <div style="width: 56px; height: 56px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 700;">R</div>
+                    <div>
+                        <h3 style="margin-bottom: 4px;">Rahul Sharma</h3>
+                        <p style="margin: 0;">Jaipur, Rajasthan</p>
+                    </div>
+                </div>
+                <span class="demo-badge-mobile">DEMO</span>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 16px;">Family Mode</h3>
+                <div class="med-item">
+                    <div class="med-info"><h4>Rahul (You)</h4></div>
+                    <span class="badge badge-accent">3 meds</span>
+                </div>
+                <div class="med-item">
+                    <div class="med-info"><h4>Father</h4></div>
+                    <span class="badge badge-accent">2 meds</span>
+                </div>
+                <div class="med-item">
+                    <div class="med-info"><h4>Mother</h4></div>
+                    <span class="badge badge-accent">3 meds</span>
+                </div>
+                <div class="med-item">
+                    <div class="med-info"><h4>Child</h4></div>
+                    <span class="badge badge-accent">1 med</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="med-item" onclick="navigate('medicines')">
+                    <div class="med-info"><h4>My Medicines</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <div class="med-item" onclick="showToast('No recovery history in demo.')">
+                    <div class="med-info"><h4>Recovery History</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <div class="med-item" onclick="showToast('No saved facilities in demo.')">
+                    <div class="med-info"><h4>Saved Facilities</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <div class="med-item" onclick="showToast('Notifications are disabled in demo.')">
+                    <div class="med-info"><h4>Notifications</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <div class="med-item" onclick="showToast('Privacy policy not available in demo.')">
+                    <div class="med-info"><h4>Privacy</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+                <div class="med-item" onclick="showToast('MedScan+ v1.0 Prototype. Offline Demo Mode.')">
+                    <div class="med-info"><h4>About MedScan+</h4></div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+            </div>
+            
+            <div class="card" style="background: var(--bg); border: 1px dashed var(--border);">
+                <h4 style="font-size: 14px; margin-bottom: 4px;">Offline Demo Mode</h4>
+                <p style="font-size: 12px; margin: 0;">All data is simulated and stored locally. No real medical services are active.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active" data-target="home" onclick="navigate('home')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+        </a>
+        <a href="#" class="nav-item" data-target="find" onclick="navigate('find')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Find
+        </a>
+        <a href="#" class="nav-item" data-target="medicines" onclick="navigate('medicines')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            Medicines
+        </a>
+        <a href="#" class="nav-item" data-target="recover" onclick="navigate('recover')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Recover
+        </a>
+        <a href="#" class="nav-item" data-target="profile" onclick="navigate('profile')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+        </a>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+</div>
+
+<!-- GOVERNMENT DASHBOARD -->
+<div id="gov-screen" style="display: none;">
+    <div class="gov-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto;">
+            <div>
+                <h1 style="color: white; margin-bottom: 4px;">MEDSCAN+ Gov</h1>
+                <p style="color: rgba(255,255,255,0.8); margin: 0;">Medicine Safety & Recovery — Rajasthan Pilot</p>
+            </div>
+            <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">DEMO DATA</span>
+        </div>
+    </div>
+
+    <div class="gov-content" style="max-width: 1000px; margin: 0 auto;">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Medicines Verified</div>
+                <div class="kpi-value">1,284</div>
+            </div>
+            <div class="kpi-card" style="border-left-color: var(--warning);">
+                <div class="kpi-label">Potential Mismatches</div>
+                <div class="kpi-value">37</div>
+            </div>
+            <div class="kpi-card" style="border-left-color: var(--primary);">
+                <div class="kpi-label">Recovery Requests</div>
+                <div class="kpi-value">146</div>
+            </div>
+            <div class="kpi-card" style="border-left-color: var(--text-muted);">
+                <div class="kpi-label">Eligible Returns</div>
+                <div class="kpi-value">91</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <div class="card" style="margin:0;">
+                <h3 style="margin-bottom: 16px;">Facility Overview</h3>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <span class="small">Government PHCs</span>
+                    <span style="font-weight: 700;">12</span>
+                </div>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <span class="small">Participating Collection Points</span>
+                    <span style="font-weight: 700;">8</span>
+                </div>
+                <div class="flex-between">
+                    <span class="small">Jan Aushadhi Demo Points</span>
+                    <span style="font-weight: 700;">6</span>
+                </div>
+            </div>
+            <div class="card" style="margin:0;">
+                <h3 style="margin-bottom: 16px;">Recovery Volume</h3>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <span class="small">Collected</span>
+                    <span style="font-weight: 700; color: var(--primary);">146</span>
+                </div>
+                <div class="flex-between" style="margin-bottom: 12px;">
+                    <span class="small">Potentially reusable</span>
+                    <span style="font-weight: 700; color: var(--accent);">91</span>
+                </div>
+                <div class="flex-between">
+                    <span class="small">Not eligible</span>
+                    <span style="font-weight: 700; color: var(--danger);">55</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">Medication Safety — Mismatch Alerts by Area</h3>
+            <div class="bar-chart">
+                <div class="bar-row">
+                    <div class="bar-label">Jaipur Rural</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 100%; background: var(--danger);"></div></div>
+                    <div class="bar-val">18</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">Sanganer</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 50%; background: var(--warning);"></div></div>
+                    <div class="bar-val">9</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">Amer</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 33%; background: var(--warning);"></div></div>
+                    <div class="bar-val">6</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">Other</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 22%;"></div></div>
+                    <div class="bar-val">4</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">Recovery Hotspots</h3>
+            <div class="bar-chart">
+                <div class="bar-row">
+                    <div class="bar-label">Jaipur Rural</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 100%;"></div></div>
+                    <div class="bar-val">42</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">Sanganer</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 75%;"></div></div>
+                    <div class="bar-val">31</div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">Amer</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: 45%;"></div></div>
+                    <div class="bar-val">18</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">Policy-ready Data</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="background: var(--bg); padding: 12px; border-radius: 8px;">
+                    <h4 style="font-size: 13px; margin-bottom: 4px;">Medication Safety</h4>
+                    <p style="font-size: 12px; margin: 0;">Mismatch alerts by location</p>
+                </div>
+                <div style="background: var(--bg); padding: 12px; border-radius: 8px;">
+                    <h4 style="font-size: 13px; margin-bottom: 4px;">Recovery Volume</h4>
+                    <p style="font-size: 12px; margin: 0;">Medicine returned and verified</p>
+                </div>
+                <div style="background: var(--bg); padding: 12px; border-radius: 8px;">
+                    <h4 style="font-size: 13px; margin-bottom: 4px;">Wastage Patterns</h4>
+                    <p style="font-size: 12px; margin: 0;">Area-wise recovery trends</p>
+                </div>
+                <div style="background: var(--bg); padding: 12px; border-radius: 8px;">
+                    <h4 style="font-size: 13px; margin-bottom: 4px;">Facility Performance</h4>
+                    <p style="font-size: 12px; margin: 0;">Return processing activity</p>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 16px;" onclick="exportReport()">Export Demo Report</button>
+        </div>
+
+        <div class="card" style="background: var(--bg); border: 1px dashed var(--border);">
+            <p style="text-align: center; font-size: 12px; margin: 0;">Prototype analytics using simulated pilot data. Not actual Rajasthan statistics.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+            <button class="btn btn-outline" style="max-width: 200px; margin: 0 auto;" onclick="window.location.hash = ''; window.location.reload()">Back to App Demo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // STATE & STORAGE MANAGEMENT
+    // ==========================================
+    const STORAGE_KEY = 'medscan_data';
+    
+    const loadState = () => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : { medicines: [], history: [] };
+        } catch (e) {
+            return { medicines: [], history: [] };
+        }
+    };
+
+    const saveState = (state) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    let appState = loadState();
+
+    // ==========================================
+    // NAVIGATION
+    // ==========================================
+    function navigate(screenId) {
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        
+        // Show target screen
+        const screen = document.getElementById(screenId + '-screen');
+        if (screen) {
+            screen.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Update bottom nav
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.toggle('active', nav.dataset.target === screenId);
+        });
+
+        // Specific screen initializations
+        if (screenId === 'find') {
+            searchFacilities(); // Populate list initially
+        }
+        if (screenId === 'dropoff') {
+            generateQR();
+        }
+    }
+
+    // ==========================================
+    // TOAST NOTIFICATIONS
+    // ==========================================
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ==========================================
+    // HOME: MARK TAKEN
+    // ==========================================
+    function markTaken(btnId) {
+        const btn = typeof btnId === 'string' ? document.getElementById(btnId) : btnId;
+        btn.innerText = '✓ Taken';
+        btn.style.background = 'var(--accent-light)';
+        btn.style.color = 'var(--accent)';
+        showToast('Medicine marked as taken. Adherence updated.');
+    }
+
+    // ==========================================
+    // FIND MEDICINE LOGIC
+    // ==========================================
+    const facilities = [
+        { name: 'Government PHC', type: 'Participating Centre', distance: '2.1 km', price: 'FREE', status: 'Available', open: true },
+        { name: 'Jan Aushadhi Kendra', type: 'Generic Medicine', distance: '3.5 km', price: '₹8', status: 'Available', open: true },
+        { name: 'Local Pharmacy', type: 'Private Retailer', distance: '0.8 km', price: '₹42', status: 'Available', open: false }
+    ];
+
+    function searchFacilities() {
+        const list = document.getElementById('facility-list');
+        if (!list) return;
+        
+        list.innerHTML = facilities.map(f => `
+            <div class="facility-card">
+                <div class="facility-header">
+                    <div>
+                        <div class="facility-name">${f.name}</div>
+                        <div class="facility-type">${f.type} • Jaipur</div>
+                    </div>
+                    <span class="badge ${f.open ? 'badge-accent' : 'badge-neutral'}">${f.open ? 'Open' : 'Closed'}</span>
+                </div>
+                <div class="facility-meta">
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${f.distance}</div>
+                    <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> ${f.price}</div>
+                    <div style="color: var(--accent); font-weight: 600;">${f.status}</div>
+                </div>
+                <div class="facility-actions">
+                    <button class="btn btn-outline" onclick="showToast('Demo navigation — live maps will be connected in production.')">Directions</button>
+                    <button class="btn btn-primary" onclick="showToast('Facility details are not available in offline demo.')">Details</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ==========================================
+    // PRESCRIPTION SCANNER LOGIC
+    // ==========================================
+    function startDemoScan() {
+        document.getElementById('scan-initial').style.display = 'none';
+        document.getElementById('scan-loading').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('scan-status-text').innerText = 'Extracting text...';
+        }, 1500);
+
+        setTimeout(() => {
+            document.getElementById('scan-loading').style.display = 'none';
+            document.getElementById('scan-results').style.display = 'block';
+        }, 3000);
+    }
+
+    function createMedicinePlan() {
+        showToast('Medicines added to your plan.');
+        navigate('medicines');
+    }
+
+    // ==========================================
+    // VERIFICATION LOGIC
+    // ==========================================
+    function runVerification(type) {
+        document.getElementById('verify-scan-initial').style.display = 'none';
+        document.getElementById('verify-scan-loading').style.display = 'block';
+        document.getElementById('verify-results').style.display = 'none';
+
+        setTimeout(() => {
+            document.getElementById('verify-scan-loading').style.display = 'none';
+            document.getElementById('verify-results').style.display = 'block';
+
+            if (type === 'match') {
+                document.getElementById('scanned-name').innerText = 'Metformin';
+                document.getElementById('scanned-strength').innerText = '500 mg';
+                document.getElementById('match-result').style.display = 'block';
+                document.getElementById('mismatch-result').style.display = 'none';
+            } else {
+                document.getElementById('scanned-name').innerText = 'Metformin';
+                document.getElementById('scanned-strength').innerText = '250 mg';
+                document.getElementById('scanned-strength').style.color = 'var(--danger)';
+                document.getElementById('match-result').style.display = 'none';
+                document.getElementById('mismatch-result').style.display = 'block';
+            }
+        }, 2000);
+    }
+
+    // ==========================================
+    // RECOVERY LOGIC
+    // ==========================================
+    function checkEligibility() {
+        showToast('Eligibility checked: Potentially eligible.');
+        document.getElementById('eligibility-check').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectFacility(name, distance) {
+        document.getElementById('dropoff-facility').innerText = name;
+        document.getElementById('dropoff-distance').innerText = distance + ' away';
+        navigate('dropoff');
+    }
+
+    function generateQR() {
+        const grid = document.getElementById('qr-code-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        // Generate a 10x10 grid simulating a QR code
+        for(let i=0; i<100; i++) {
+            const pixel = document.createElement('div');
+            // Make corners look like QR positioning squares
+            const isCorner = (i < 30 && i % 10 < 3) || (i < 30 && i % 10 > 6) || (i > 69 && i % 10 < 3);
+            const isRandom = Math.random() > 0.5;
+            if (isCorner || isRandom) {
+                pixel.className = 'qr-pixel';
+            } else {
+                pixel.className = 'qr-pixel empty';
+            }
+            grid.appendChild(pixel);
+        }
+    }
+
+    function simulateVerification() {
+        document.getElementById('dropoff-pending').style.display = 'none';
+        document.getElementById('dropoff-success').style.display = 'block';
+        
+        // Save to history
+        appState.history.push({
+            medicine: 'Metformin 500 mg',
+            status: 'Returned',
+            date: new Date().toLocaleDateString()
+        });
+        saveState(appState);
+        showToast('Drop-off recorded successfully.');
+    }
+
+    // ==========================================
+    // GOV DASHBOARD LOGIC
+    // ==========================================
+    function checkGovRoute() {
+        if (window.location.hash === '#government') {
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('gov-screen').style.display = 'block';
+        } else {
+            document.getElementById('app-container').style.display = 'block';
+            document.getElementById('gov-screen').style.display = 'none';
+        }
+    }
+
+    window.addEventListener('hashchange', checkGovRoute);
+
+    function exportReport() {
+        const report = "MEDSCAN+ GOVERNMENT DEMO REPORT\n" +
+                       "-----------------------------------\n" +
+                       "Medicines Verified: 1,284\n" +
+                       "Potential Mismatches: 37\n" +
+                       "Recovery Requests: 146\n" +
+                       "Eligible Returns: 91\n\n" +
+                       "Prototype analytics using simulated pilot data.";
+        
+        const blob = new Blob([report], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'MedScan_Gov_Report_Demo.txt';
+        link.click();
+        showToast('Demo report downloaded.');
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    window.onload = function() {
+        checkGovRoute();
+        setTimeout(() => {
+            document.getElementById('splash').classList.add('hide');
+        }, 2500); // Simulate loading time
+    };
+</script>
+</body>
+</html>
